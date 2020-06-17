@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+
+	{{ url_for('shorten.redirect_to_original', short_url = new_link, _external = True) }} <br>
+	{{ original_url }}
+
+</body>
+</html>

@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+
+	<form method = "POST" action = "{{ url_for('shorten.add_link') }}">
+		Original URL: 
+		<input type = "text" name = "original_url">
+		<input type = "submit">
+	</form>
+
+</body>
+</html>
