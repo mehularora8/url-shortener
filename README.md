@@ -1,2 +1,2 @@
 # url-shortener
-URL Shortening service designed in Flask.
+URL Shortening service written in Flask.
