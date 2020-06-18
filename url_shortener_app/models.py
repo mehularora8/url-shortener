@@ -20,7 +20,8 @@ class URL(db.Model):
 	visits 		 = db.Column(db.Integer, default = 0)
 	# Time when the link was created. Defaults to current time
 	date_created = db.Column(db.DateTime, default = datetime.now)
-
+	# User that created this link
+	creator_id	 = db.Column(db.String(32), db.ForeignKey('user.email'))
 
 	# Initializes short URL fora given request.
 	def __init__(self, **kwargs):
@@ -41,3 +42,21 @@ class URL(db.Model):
 			return self.generate_url()
 		else:
 			return short_url
+
+class User(db.Model):
+	email 		  = db.Column(db.String(32), primary_key = True)
+	password 	  = db.Column(db.String(32))
+	authenticated = db.Column(db.Boolean, default = True)
+	links 		  = db.relationship('URL', backref = 'creator')
+
+	def is_active(self):
+		return True
+
+	def get_id(self):
+		return self.email
+
+	def is_authenticated(self):
+		return self.authenticated
+
+	def is_anonymous(self):
+		return False

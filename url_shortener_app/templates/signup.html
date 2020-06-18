@@ -1,0 +1,21 @@
+<html>
+  <head>
+    <title></title>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Sign up here</h1>
+      <br>
+      <form action="" method="post">
+        <input type="text" placeholder="Username" name="username" value="{{
+          request.form.username }}">
+         <input type="password" placeholder="Password" name="password" value="{{
+          request.form.password }}">
+        <input type="submit" value="Login">
+      </form>
+      {% if status %}
+        {{ status }}
+      {% endif %}
+    </div>
+  </body>
+</html>
