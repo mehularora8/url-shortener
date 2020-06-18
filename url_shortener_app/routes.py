@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, url_for, redirect, flash, session
+from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 
 from .extensions import db
@@ -10,7 +11,7 @@ shorten = Blueprint('shorten', __name__)
 def login_required(func):
 	@wraps(func)
 	def wrap(*args, **kwargs):
-		if session["USERNAME"]:
+		if session["USERNAME"] is not None:
 			return func(*args, **kwargs)
 		else:
 			flash("Login first.")
@@ -23,17 +24,17 @@ def login():
     error = None
     if request.method == 'POST':
     	username = request.form['username']
-    	user = User.query.filter_by(email = username).first()
+    	user = User.query.filter_by(username = username).first()
 
     	if not user:
         	error = 'User does not exist. Please sign up'
     	else:
         	password = request.form['password']
-        	if user.password != password:
+        	if not check_password_hash(user.password, password):
         		error = "Invalid password. Please try again"
         	else:
         		session["USERNAME"] = username
-        		return redirect(url_for('shorten.index'))
+        		return redirect(url_for('shorten.home'))
 
         
     return render_template('login.html', error=error)
@@ -44,16 +45,16 @@ def signup():
     if request.method == 'POST':
     	username = request.form['username']
     	# Check to see if user exists
-    	user = User.query.filter_by(email = username).first()
+    	user = User.query.filter_by(username = username).first()
     	if user:
         	status = 'User exists. Please log in.'
     	else:
         	password = request.form['password']
-        	new_user = User(email = username, password= password)
+        	new_user = User(username = username, password = generate_password_hash(password, method = 'sha256'))
         	db.session.add(new_user)
         	db.session.commit()
 
-        	status = "Successfully added user."
+        	status = "Successfully registered."
 
         
     return render_template('signup.html', status=status)
@@ -70,10 +71,15 @@ def redirect_to_original(short_url):
 	return redirect(redirect_link.original_url)
 
 @shorten.route('/')
-@login_required
 def index():
 	# Main page
-	return render_template('index.html')
+	return redirect(url_for('shorten.login'))#render_template('index.html')
+
+@shorten.route('/home')
+@login_required
+def home():
+	# Main page
+	return render_template("home.html")
 
 @shorten.route('/delete/<short_url>')
 def delete(short_url):
@@ -96,7 +102,7 @@ def delete(short_url):
 def add_link():
 	# Create a new database object with a request from the user
 	user_request   = request.form['original_url']
-	shortened_link = URL(original_url = user_request, creator = User.query.filter_by(email = session.get("USERNAME")).first())
+	shortened_link = URL(original_url = user_request, creator = User.query.filter_by(username = session.get("USERNAME")).first())
 
 	# Add to database
 	db.session.add(shortened_link)
